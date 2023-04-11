@@ -1,0 +1,8 @@
+[package]
+name = "easy-ffi"
+version = "0.1.0"
+description = "Types and utilities to enable writing C FFI wrappers easily."
+authors = ["HERE Europe B.V."]
+license = "Apache License 2.0"
+edition = "2018"
+repository = "https://github.com/heremaps/easy-ffi"
