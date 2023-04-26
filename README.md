@@ -1,4 +1,4 @@
-Easy-ffi encompasses tools for bridging FFI boundaries with Rust, especially C++ <-> Rust interactions
+Easy-ffi encompasses tools for bridging FFI boundaries with Rust, especially Rust -> C++ interactions
 
 # License
  
