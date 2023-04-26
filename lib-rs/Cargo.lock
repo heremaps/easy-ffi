@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "easy-ffi"
+name = "easy-ffi-wrapper"
 version = "0.1.0"
