@@ -1,5 +1,5 @@
 [package]
-name = "easy-ffi"
+name = "easy-ffi-wrapper"
 version = "0.1.0"
 description = "Types and utilities to enable writing C FFI wrappers easily."
 authors = ["HERE Europe B.V."]
