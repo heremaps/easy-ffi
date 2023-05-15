@@ -112,8 +112,8 @@ pub unsafe fn slice_from_raw_parts<'a, T>(ptr: *const T, len: usize) -> &'a [T] 
 /// Wraps a non-owned FFI string without the overhead of CString/String
 ///
 /// This allows the user of the API to choose if they want to treat the string
-/// as a bunch of bytes (`bytes`), verify it as a utf8 `str` (`as_str`), or
-/// convert it lossily into a `Cow<str>` (`to_str_lossy`).
+/// as a bunch of bytes ([`bytes`]), verify it as a utf8 `str` ([`as_str`]), or
+/// convert it lossily into a `Cow<str>` ([`to_str_lossy`]).
 ///
 /// # Example
 ///
