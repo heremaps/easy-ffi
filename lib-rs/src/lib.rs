@@ -4,7 +4,7 @@
 //!
 //! * Safely create slices from C slices.
 //! * Convenience wrapper and builder for C strings.
-//! * Macro for creating owning data types.
+//! * Macro for creating owned data types.
 //! * Macro for creating iterators from access by index and length.
 //!
 //! # Example usage
@@ -109,7 +109,7 @@ pub unsafe fn slice_from_raw_parts<'a, T>(ptr: *const T, len: usize) -> &'a [T] 
     }
 }
 
-/// Wraps a non-owning FFI string without the overhead of CString/String
+/// Wraps a non-owned FFI string without the overhead of CString/String
 ///
 /// This allows the user of the API to choose if they want to treat the string
 /// as a bunch of bytes (`bytes`), verify it as a utf8 `str` (`as_str`), or
@@ -256,7 +256,7 @@ impl Default for StrBuilder {
     }
 }
 
-/// Generates an owning type `BoxedTypeName` for a FFI type `TypeName`.
+/// Generates an owned type `BoxedTypeName` for a FFI type `TypeName`.
 ///
 /// The generated type `BoxedTypeName` behaves like `Box<TypeName>` with a custom destructor.
 /// Box types implement: `Drop`, `Deref`, `DerefMut`, `AsRef`, `Borrow`, `Clone`, `Default`.
