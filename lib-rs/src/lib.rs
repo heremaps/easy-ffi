@@ -18,12 +18,12 @@
 //!
 //!     extern {
 //!         pub fn data_create() -> *mut DataHandle;
-//!         pub fn data_release(_: *mut DataHandle);
-//!         pub fn data_clone(_: *const DataHandle) -> *mut DataHandle;
-//!         pub fn data_numbers(_: *const DataHandle, start: *mut *const u32, size: *mut usize);
-//!         pub fn data_name(_: *const DataHandle, start: *mut *const c_char, size: *mut usize);
-//!         pub fn data_item_len(_: *const DataHandle) -> usize;
-//!         pub fn data_item_get(_: *const DataHandle, pos: usize) -> *const DataItem;
+//!         pub fn data_release(object: *mut DataHandle);
+//!         pub fn data_clone(object: *const DataHandle) -> *mut DataHandle;
+//!         pub fn data_numbers(object: *const DataHandle, start: *mut *const u32, size: *mut usize);
+//!         pub fn data_name(object: *const DataHandle, start: *mut *const c_char, size: *mut usize);
+//!         pub fn data_item_len(object: *const DataHandle) -> usize;
+//!         pub fn data_item_get(object: *const DataHandle, pos: usize) -> *const DataItem;
 //!     }
 //! }
 //!
@@ -81,13 +81,13 @@ use std::fmt;
 ///
 /// [`slice::from_raw_parts`]: https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html
 ///
-/// # Examples
+/// Example
 /// ```
 /// mod bindings {
 ///     pub enum Data {}
 ///
 ///     extern {
-///         pub fn get_my_data_from_c(_: *const Data, start: *mut *const u32, size: *mut usize);
+///         pub fn get_my_data_from_c(object: *const Data, start: *mut *const u32, size: *mut usize);
 ///     }
 /// }
 /// use bindings::Data as Data;
@@ -123,7 +123,7 @@ pub unsafe fn slice_from_raw_parts<'a, T>(ptr: *const T, len: usize) -> &'a [T] 
 ///     pub enum Data {}
 ///
 ///     extern {
-///         pub fn get_my_data_from_c(_: *const Data, start: *mut *const c_char, size: *mut usize);
+///         pub fn get_my_data_from_c(object: *const Data, start: *mut *const c_char, size: *mut usize);
 ///     }
 /// }
 /// use bindings::Data as Data;
@@ -204,7 +204,7 @@ impl AsRef<[u8]> for Str<'_> {
 ///     pub enum Data {}
 ///
 ///     extern {
-///         pub fn get_my_data_from_c(_: *const Data, start: *mut *const c_char, size: *mut usize);
+///         pub fn get_my_data_from_c(object: *const Data, start: *mut *const c_char, size: *mut usize);
 ///     }
 /// }
 /// use bindings::Data as Data;
@@ -270,8 +270,8 @@ impl Default for StrBuilder {
 ///
 ///     extern {
 ///         pub fn type_name_create() -> *mut TypeName;
-///         pub fn type_name_release(_: *mut TypeName);
-///         pub fn type_name_clone(_: *const TypeName) -> *mut TypeName;
+///         pub fn type_name_release(object: *mut TypeName);
+///         pub fn type_name_clone(object: *const TypeName) -> *mut TypeName;
 ///     }
 /// }
 /// use bindings::TypeName as TypeName;
