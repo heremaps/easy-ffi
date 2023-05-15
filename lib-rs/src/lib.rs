@@ -1,12 +1,4 @@
-//! Types and utilities to enable writing C FFI wrappers easily.
-//!
-//! # Features
-//!
-//! * Safely create slices from C slices.
-//! * Convenience wrapper and builder for C strings.
-//! * Macro for creating owning data types.
-//! * Macro for creating iterators from access by index and length.
-
+#![doc = include_str!("../README.md")]
 #![deny(warnings, missing_debug_implementations, missing_docs)]
 
 use std::fmt;
@@ -19,6 +11,27 @@ use std::fmt;
 /// Same as [`slice::from_raw_parts`].
 ///
 /// [`slice::from_raw_parts`]: https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html
+///
+/// Example
+/// ```
+/// mod bindings {
+///     pub enum Data {}
+///
+///     extern {
+///         pub fn get_my_data_from_c(object: *const Data, start: *mut *const u32, size: *mut usize);
+///     }
+/// }
+/// use bindings::Data as Data;
+/// impl Data {
+///     pub fn my_data(&self) -> &[u32] {
+///         unsafe {
+///             let (mut ptr, mut len) = (std::ptr::null(), 0);
+///             bindings::get_my_data_from_c(self, &mut ptr, &mut len);
+///             easy_ffi_wrapper::slice_from_raw_parts(ptr, len)
+///         }
+///     }
+/// }
+/// ```
 pub unsafe fn slice_from_raw_parts<'a, T>(ptr: *const T, len: usize) -> &'a [T] {
     if !ptr.is_null() {
         std::slice::from_raw_parts(ptr, len)
@@ -27,7 +40,34 @@ pub unsafe fn slice_from_raw_parts<'a, T>(ptr: *const T, len: usize) -> &'a [T] 
     }
 }
 
-/// Wraps a non-owning FFI string
+/// Wraps a non-owned FFI string without the overhead of CString/String
+///
+/// This allows the user of the API to choose if they want to treat the string
+/// as a bunch of bytes ([`bytes`]), verify it as a utf8 `str` ([`as_str`]), or
+/// convert it lossily into a `Cow<str>` ([`to_str_lossy`]).
+///
+/// # Example
+///
+/// ```
+/// mod bindings {
+/// #   use std::os::raw::c_char;
+///     pub enum Data {}
+///
+///     extern {
+///         pub fn get_my_data_from_c(object: *const Data, start: *mut *const c_char, size: *mut usize);
+///     }
+/// }
+/// use bindings::Data as Data;
+/// impl Data {
+///     pub fn my_data(&self) -> easy_ffi_wrapper::Str {
+///         let mut value = easy_ffi_wrapper::StrBuilder::new();
+///         unsafe {
+///             bindings::get_my_data_from_c(self, &mut value.ptr, &mut value.len);
+///             value.build()
+///         }
+///     }
+/// }
+/// ```
 #[derive(Clone, Copy)]
 pub struct Str<'a> {
     data: &'a [u8],
@@ -81,7 +121,7 @@ impl<'a> std::ops::Deref for Str<'a> {
 
 impl AsRef<[u8]> for Str<'_> {
     fn as_ref(&self) -> &[u8] {
-        &self.data
+        self.data
     }
 }
 
@@ -89,26 +129,22 @@ impl AsRef<[u8]> for Str<'_> {
 ///
 /// # Example
 ///
-/// ```rust,no_run
-/// # use std::os::raw::c_char;
-/// use easy_ffi::{Str, StrBuilder};
+/// ```
+/// mod bindings {
+/// #   use std::os::raw::c_char;
+///     pub enum Data {}
 ///
-/// enum T {}
-///
-/// extern "C" {
-///     fn extern_get_str_from_my_struct(
-///         t: *const T,
-///         ptr_out: *mut *const c_char,
-///         len_out: *mut usize,
-///     );
+///     extern {
+///         pub fn get_my_data_from_c(object: *const Data, start: *mut *const c_char, size: *mut usize);
+///     }
 /// }
-///
-/// impl T {
-///     fn get_str(&self) -> Str {
-///         let mut builder = StrBuilder::new();
+/// use bindings::Data as Data;
+/// impl Data {
+///     pub fn my_data(&self) -> easy_ffi_wrapper::Str {
+///         let mut value = easy_ffi_wrapper::StrBuilder::new();
 ///         unsafe {
-///             extern_get_str_from_my_struct(self, &mut builder.ptr, &mut builder.len);
-///             builder.build()
+///             bindings::get_my_data_from_c(self, &mut value.ptr, &mut value.len);
+///             value.build()
 ///         }
 ///     }
 /// }
@@ -151,15 +187,26 @@ impl Default for StrBuilder {
     }
 }
 
-/// Generates an owning type `BoxedTypeName` for a FFI type `TypeName`.
+/// Generates an owned type `BoxedTypeName` for a FFI type `TypeName`.
 ///
 /// The generated type `BoxedTypeName` behaves like `Box<TypeName>` with a custom destructor.
 /// Box types implement: `Drop`, `Deref`, `DerefMut`, `AsRef`, `Borrow`, `Clone`, `Default`.
 ///
 /// ## Example
 ///
-/// ```compile_fail
-/// ffi_box!(
+/// ```no_run
+/// # #[macro_use] extern crate easy_ffi_wrapper;
+/// mod bindings {
+///     pub enum TypeName {}
+///
+///     extern {
+///         pub fn type_name_create() -> *mut TypeName;
+///         pub fn type_name_release(object: *mut TypeName);
+///         pub fn type_name_clone(object: *const TypeName) -> *mut TypeName;
+///     }
+/// }
+/// use bindings::TypeName as TypeName;
+/// easy_ffi_wrapper::ffi_box!(
 ///     TypeName,
 ///     BoxedTypeName,
 ///     debug, // optional; omit if debug output is not supported
@@ -298,8 +345,8 @@ macro_rules! ffi_box {
 ///
 /// # Example
 ///
-/// ```rust,no_run
-/// # #[macro_use] extern crate easy_ffi;
+/// ```no_run
+/// # #[macro_use] extern crate easy_ffi_wrapper;
 /// mod bindings {
 ///     pub enum ContainerType {}
 ///     pub enum ContainerItem {}
@@ -312,7 +359,7 @@ macro_rules! ffi_box {
 ///
 /// use bindings::{ContainerType, ContainerItem};
 ///
-/// easy_ffi::ffi_iter!(
+/// easy_ffi_wrapper::ffi_iter!(
 ///     ContainerIter(ContainerType) -> ContainerItem,
 ///     len(bindings::container_name_len),
 ///     get(bindings::container_name_get)
@@ -442,7 +489,7 @@ macro_rules! ffi_iter {
 /// # Example
 ///
 /// ```rust,no_run
-/// # #[macro_use] extern crate easy_ffi;
+/// # #[macro_use] extern crate easy_ffi_wrapper;
 /// mod bindings {
 ///     pub enum ContainerType {}
 ///     pub enum ContainerItem {}
@@ -458,7 +505,7 @@ macro_rules! ffi_iter {
 ///
 /// use bindings::{ContainerType, ContainerItem};
 ///
-/// easy_ffi::ffi_vec!(
+/// easy_ffi_wrapper::ffi_vec!(
 ///     ContainerType(ContainerIter, ContainerIterMut) -> ContainerItem,
 ///     len(bindings::container_name_len),
 ///     get(bindings::container_name_get),
