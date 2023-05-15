@@ -81,7 +81,7 @@ use std::fmt;
 ///
 /// [`slice::from_raw_parts`]: https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html
 ///
-/// Example
+/// # Examples
 /// ```
 /// mod bindings {
 ///     pub enum Data {}
