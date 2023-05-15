@@ -17,10 +17,10 @@ jobs:
       - name: Build
         run: |
           cd lib-rs
-          cargo build --all-targets
-          cargo build --all-targets --all-features
+          cargo build --workspace
+          cargo build --workspace --all-features
       - name: Run tests
         run: |
           cd lib-rs
-          cargo test --all-targets
-          cargo test --all-targets --all-features
+          cargo test --workspace
+          cargo test --workspace --all-features
