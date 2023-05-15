@@ -6,7 +6,7 @@ This crate provides utilities for bindings to FFI interfaces
 
 * Safely create slices from C slices.
 * Convenience wrapper and builder for C strings.
-* Macro for creating owning data types.
+* Macro for creating owned data types.
 * Macro for creating iterators from access by index and length.
 
 ## Example usage
